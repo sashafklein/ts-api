@@ -7,7 +7,7 @@ interface StartingEndpoint {
   tag: "persons";
   parameters?: Param[];
   responses: Responses;
-  requestBody?: any;
+  requestBody?: any; // TODO: Type this out. What's missing here?
 }
 
 interface CompleteEndpoint {
