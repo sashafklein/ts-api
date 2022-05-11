@@ -4,8 +4,8 @@ import { Properties, Property } from "./types";
 /**
  * A class for tracking and modifying properties of any "domain object" (eg Person).
  * Generally created using the Schema helper function (below):
- *   Schema('Person', { ...properties }).pick(['one', 'two']).asProps()
- * The `asProps` function is required when integrating into a spec
+ *   Schema('Person', { ...properties }).pick(['one', 'two']).asObject()
+ * The `asObject` function is required when integrating into a spec
  * to return openapi-friendly properties.
  */
 export class BaseSchema {
@@ -22,7 +22,7 @@ export class BaseSchema {
   }
 
   /**
-   * Select the fields to return when calling asProps.
+   * Select the fields to return when calling asObject.
    */
   pick = (fields: string[]) => {
     return this._modify("PICK", fields, (field) => {
@@ -31,7 +31,7 @@ export class BaseSchema {
   };
 
   /**
-   * Exclude fields to return when calling asProps.
+   * Exclude fields to return when calling asObject.
    */
   omit = (fields: string[]) => {
     return this._modify("OMIT", fields, (field) => {
@@ -40,7 +40,7 @@ export class BaseSchema {
   };
 
   /**
-   * Add to the list of required field returned from asProps.
+   * Add to the list of required field returned from asObject.
    */
   require = (fields: string[]) => {
     return this._modify(
@@ -67,7 +67,7 @@ export class BaseSchema {
   /**
    * Return all the properties selected, as an openapi property object.
    */
-  asProps = () => {
+  asObject = () => {
     return {
       type: "object",
       properties: this.selected,

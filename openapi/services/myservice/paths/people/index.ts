@@ -22,16 +22,16 @@ const result = {
         data: {
           type: "object",
           properties: {
-            person: Person().asProps(),
-            limitedPerson: Person().omit(["ssn", "last_name"]).asProps(),
+            person: Person().asObject(),
+            limitedPerson: Person().omit(["ssn", "last_name"]).asObject(),
             expandedPerson: Person()
               .pick(["first_name", "last_name"])
               .add("age!", { type: "integer", example: 25 })
-              .asProps(),
-            personWithRequiredSsn: Person().require(["ssn"]).asProps(),
+              .asObject(),
+            personWithRequiredSsn: Person().require(["ssn"]).asObject(),
             personWithEasyRequires: Person()
               .pick(["first_name!", "last_name!"])
-              .asProps(),
+              .asObject(),
           },
         },
       }),
