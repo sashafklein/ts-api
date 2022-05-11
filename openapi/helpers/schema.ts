@@ -1,36 +1,6 @@
 import _ from "lodash";
 
-interface BasicProperty {
-  type: "number" | "integer" | "boolean" | "uuid";
-  example?: number | boolean | string;
-}
-
-interface StringProperty {
-  type: "string";
-  example?: string;
-  format?: string;
-  pattern?: RegExp;
-}
-
-interface ObjectProperty {
-  type: "object";
-  properties: Record<string, Property>;
-  required?: string[];
-}
-
-interface ArrayProperty {
-  type: "array";
-  items: Property;
-}
-
-export type Property =
-  | BasicProperty
-  | StringProperty
-  | ObjectProperty
-  | ArrayProperty;
-
-type Properties = Record<string, Property>;
-
+import { Properties, Property } from "./types";
 /**
  * A class for tracking and modifying properties of any "domain object" (eg Person).
  * Generally created using the Schema helper function (below):
@@ -102,6 +72,7 @@ export class BaseSchema {
       type: "object",
       properties: this.selected,
       required: this.required,
+      title: this.name,
     };
   };
 
