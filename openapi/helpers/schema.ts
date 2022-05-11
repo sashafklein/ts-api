@@ -3,13 +3,11 @@ import _ from "lodash";
 interface BasicProperty {
   type: "number" | "integer" | "boolean" | "uuid";
   example?: number | boolean | string;
-  required?: boolean;
 }
 
 interface StringProperty {
   type: "string";
   example?: string;
-  required?: boolean;
   format?: string;
   pattern?: RegExp;
 }
@@ -17,13 +15,12 @@ interface StringProperty {
 interface ObjectProperty {
   type: "object";
   properties: Record<string, Property>;
-  required?: boolean;
+  required?: string[];
 }
 
 interface ArrayProperty {
   type: "array";
   items: Property;
-  required?: boolean;
 }
 
 export type Property =
@@ -33,31 +30,48 @@ export type Property =
   | ArrayProperty;
 
 type Properties = Record<string, Property>;
+
+/**
+ * A class for tracking and modifying properties of any "domain object" (eg Person).
+ * Generally created using the Schema helper function (below):
+ *   Schema('Person', { ...properties }).pick(['one', 'two']).asProps()
+ * The `asProps` function is required when integrating into a spec
+ * to return openapi-friendly properties.
+ */
 export class BaseSchema {
-  properties: Properties = {};
-  results: Properties = {};
+  allProperties: Properties = {};
+  selected: Properties = {};
   required: string[];
   name;
 
   constructor(name: string, properties: Properties) {
     this.name = name;
-    this.properties = properties; // Preserve for easier debugging
-    this.results = _.cloneDeep(properties);
+    this.allProperties = properties; // Preserve for easier debugging
+    this.selected = _.cloneDeep(properties);
     this.required = [];
   }
 
+  /**
+   * Select the fields to return when calling asProps.
+   */
   pick = (fields: string[]) => {
     return this._modify("PICK", fields, (field) => {
-      this.results[field] = this.results[field];
+      this.selected[field] = this.selected[field];
     });
   };
 
+  /**
+   * Exclude fields to return when calling asProps.
+   */
   omit = (fields: string[]) => {
     return this._modify("OMIT", fields, (field) => {
-      delete this.results[field];
+      delete this.selected[field];
     });
   };
 
+  /**
+   * Add to the list of required field returned from asProps.
+   */
   require = (fields: string[]) => {
     return this._modify(
       "REQUIRE",
@@ -66,9 +80,12 @@ export class BaseSchema {
     );
   };
 
+  /**
+   * Add a single field. Note that this field must be an openapi property, with a type, etc.
+   */
   add = (field, fieldValue: Property) => {
     const { name, required } = this._parse(field);
-    this.results[name] = fieldValue;
+    this.selected[name] = fieldValue;
 
     if (required) {
       this.required.push(name);
@@ -77,15 +94,21 @@ export class BaseSchema {
     return this;
   };
 
+  /**
+   * Return all the properties selected, as an openapi property object.
+   */
   asProps = () => {
     return {
       type: "object",
-      properties: this.results,
+      properties: this.selected,
       required: this.required,
     };
   };
 
-  // Fields with an ! are required. Remove the ! to ensure the field exists
+  /**
+   * Parse a field string, returning the base field "name", and
+   * whether the field is required (if it ends in a !).
+   */
   _parse = (field) => {
     return {
       name: field.replace("!", ""),
@@ -93,14 +116,17 @@ export class BaseSchema {
     };
   };
 
+  /**
+   * Helper function for "selecting" properties and marking some as required.
+   */
   _modify = (action, fields: string[], operation: (field?: string) => void) => {
     fields.forEach((field) => {
       const { name, required } = this._parse(field);
-      if (!this.results[name]) {
+      if (!this.selected[name]) {
         throw new Error(
           `${action}: Failed to find property "${name}" on "${this.name}".
-          All Properties: ${JSON.stringify(this.properties, null, 2)}
-          Available Properties: ${JSON.stringify(this.results, null, 2)}`
+          All Properties: ${JSON.stringify(this.allProperties, null, 2)}
+          Selected Properties: ${JSON.stringify(this.selected, null, 2)}`
         );
       }
 
@@ -115,5 +141,11 @@ export class BaseSchema {
   };
 }
 
+/**
+ *
+ * @param name Schema Name (eg Person)
+ * @param properties List of properties to fill the schema with
+ * @returns A new Schema class instance.
+ */
 export const Schema = (name: string, properties: Properties) => () =>
   new BaseSchema(name, properties);
