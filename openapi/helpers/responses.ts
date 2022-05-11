@@ -1,4 +1,10 @@
-const response = (code: number, schema, description?: string) => ({
+import { HttpCode, ResponseContent, Responses, ResponseSchema } from "./types";
+
+const response = (
+  code: HttpCode,
+  schema: ResponseSchema,
+  description?: string
+): Responses => ({
   [code]: {
     description,
     content: {
@@ -9,7 +15,7 @@ const response = (code: number, schema, description?: string) => ({
   },
 });
 
-const errorSchema = (example = "Error in backend") => ({
+const errorSchema = (example = "Error in backend"): ResponseSchema => ({
   type: "object",
   properties: {
     message: {

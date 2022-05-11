@@ -1,13 +1,14 @@
 import Person from "@myservice/schemas/Person";
 import { successJson, unauthorized, notFound } from "@helpers/responses";
 import { pathParam } from "@helpers/params";
+import { makeEndpoint } from "@helpers/endpoint";
+import { Responses } from "@helpers/types";
 
 const result = {
-  get: {
+  get: makeEndpoint({
     summary: "getPerson",
-    operationId: "getPerson",
     description: "Get data associated with person",
-    tags: ["persons"],
+    tag: "persons",
     parameters: [pathParam("personUuid", "uuid", "The person's UUID")],
     responses: {
       ...successJson({
@@ -26,7 +27,7 @@ const result = {
             limitedPerson: Person().omit(["ssn", "last_name"]).asObject(),
             expandedPerson: Person()
               .pick(["first_name", "last_name"])
-              .add("age!", { type: "integer", example: 25 })
+              .add("age!", { type: "integer" })
               .asObject(),
             personWithRequiredSsn: Person().require(["ssn"]).asObject(),
             personWithEasyRequires: Person()
@@ -38,7 +39,7 @@ const result = {
       ...unauthorized(),
       ...notFound(),
     },
-  },
+  }),
 };
 
 export default result;
