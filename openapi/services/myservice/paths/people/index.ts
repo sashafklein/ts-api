@@ -1,6 +1,6 @@
-import Person from "MyService/schemas/Person";
-import { successJson, unauthorized, notFound } from "OpenApi/helpers/responses";
-import { pathParam } from "OpenApi/helpers/params";
+import Person from "@myservice/schemas/Person";
+import { successJson, unauthorized, notFound } from "@helpers/responses";
+import { pathParam } from "@helpers/params";
 
 const result = {
   get: {
@@ -22,16 +22,16 @@ const result = {
         data: {
           type: "object",
           properties: {
-            person: Person().result(),
-            limitedPerson: Person().omit(["ssn", "last_name"]).result(),
+            person: Person().asProps(),
+            limitedPerson: Person().omit(["ssn", "last_name"]).asProps(),
             expandedPerson: Person()
               .pick(["first_name", "last_name"])
               .add("age!", { type: "integer", example: 25 })
-              .result(),
-            personWithRequiredSsn: Person().require(["ssn"]).result(),
+              .asProps(),
+            personWithRequiredSsn: Person().require(["ssn"]).asProps(),
             personWithEasyRequires: Person()
               .pick(["first_name!", "last_name!"])
-              .result(),
+              .asProps(),
           },
         },
       }),

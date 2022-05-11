@@ -1,5 +1,5 @@
-import PeoplePath from "MyService/paths/people";
-import Schemas from "MyService/schemas";
+import PeoplePath from "@myservice/paths/people";
+import Schemas from "@myservice/schemas";
 
 export default {
   openapi: "3.0.0",

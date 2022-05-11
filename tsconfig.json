@@ -6,8 +6,8 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "paths": {
-      "OpenApi/*": ["openapi/*"],
-      "MyService/*": ["openapi/services/myservice/*"]
+      "@helpers/*": ["openapi/helpers/*"],
+      "@myservice/*": ["openapi/services/myservice/*"]
     }
   },
   "ts-node": {

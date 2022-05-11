@@ -77,7 +77,7 @@ export class BaseSchema {
     return this;
   };
 
-  result = () => {
+  asProps = () => {
     return {
       type: "object",
       properties: this.results,

@@ -6,18 +6,20 @@ import openapiTS from "openapi-typescript";
 const dest = "build";
 
 fs.readdirSync("./openapi/services").forEach((service) => {
-  console.log(`BUNDLING SERVICE: ${service}\n`);
+  console.log(`COMPILING: ${service}`);
+  console.log(`- BUNDLING`);
+  const jsonPath = `${dest}/${service}Openapi.json`;
+
   const js = require(`../openapi/services/${service}/openapi.ts`).default;
 
   fs.mkdirSync(path.join(__dirname, `../${dest}`), { recursive: true });
 
-  const jsonPath = `${dest}/${service}Openapi.json`;
   fs.writeFileSync(
     path.join(__dirname, "..", jsonPath),
     JSON.stringify(js, null, 2)
   );
 
-  console.log(`BUILDING SERVICE: ${service}\n`);
+  console.log(`- BUILDING`);
   execSync(`
     redoc-cli build --options.sortTagsAlphabetically=true "${jsonPath}" -o "${jsonPath.replace(
     ".json",
@@ -25,7 +27,7 @@ fs.readdirSync("./openapi/services").forEach((service) => {
   )}"
   `);
 
-  console.log(`GENERATING SERVICE TYPES: ${service}\n`);
+  console.log(`- GENERATING TYPES\n`);
   execSync(`
     openapi-typescript ${jsonPath} --output ${jsonPath.replace(".json", ".ts")}
   `);
