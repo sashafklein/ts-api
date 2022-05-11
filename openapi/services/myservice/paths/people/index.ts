@@ -2,7 +2,6 @@ import Person from "@myservice/schemas/Person";
 import { successJson, unauthorized, notFound } from "@helpers/responses";
 import { pathParam } from "@helpers/params";
 import { makeEndpoint } from "@helpers/endpoint";
-import { Responses } from "@helpers/types";
 
 const result = {
   get: makeEndpoint({
@@ -33,6 +32,10 @@ const result = {
             personWithEasyRequires: Person()
               .pick(["first_name!", "last_name!"])
               .asObject(),
+            bunchaPeople: {
+              type: "array",
+              items: Person().asObject(),
+            },
           },
         },
       }),

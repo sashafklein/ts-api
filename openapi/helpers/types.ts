@@ -29,6 +29,7 @@ interface ObjectProperty {
   required?: string[];
   example?: object;
   description?: string;
+  title?: string; // If a schema
 }
 
 interface ArrayProperty {

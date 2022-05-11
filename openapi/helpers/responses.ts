@@ -1,4 +1,4 @@
-import { HttpCode, ResponseContent, Responses, ResponseSchema } from "./types";
+import { HttpCode, Properties, Responses, ResponseSchema } from "./types";
 
 const response = (
   code: HttpCode,
@@ -26,7 +26,7 @@ const errorSchema = (example = "Error in backend"): ResponseSchema => ({
   required: ["message"],
 });
 
-export const successJson = (properties) =>
+export const successJson = (properties: Properties) =>
   response(200, { type: "object", properties });
 
 export const badRequest = () =>

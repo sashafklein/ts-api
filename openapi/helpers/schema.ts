@@ -12,7 +12,7 @@ export class BaseSchema {
   allProperties: Properties = {};
   selected: Properties = {};
   required: string[];
-  name;
+  name: string;
 
   constructor(name: string, properties: Properties) {
     this.name = name;
@@ -69,7 +69,7 @@ export class BaseSchema {
    */
   asObject = () => {
     return {
-      type: "object",
+      type: "object" as "object",
       properties: this.selected,
       required: this.required,
       title: this.name,

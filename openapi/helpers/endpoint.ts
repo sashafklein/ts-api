@@ -92,6 +92,11 @@ export const makeEndpoint = (
     responses[200].content["application/json"].examples = {
       ...(responses[200].content["application/json"].examples || {}),
       default: generate200Example(responses[200]),
+      // other: _.set(
+      //   generate200Example(responses[200]),
+      //   "value.data.bunchaPeople[0].first_name",
+      //   "Booyah"
+      // ),
     };
   }
 
