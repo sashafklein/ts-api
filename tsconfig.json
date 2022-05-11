@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "esModuleInterop": true,
+    "noEmit": true,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "paths": {
+      "OpenApi/*": ["openapi/*"],
+      "MyService/*": ["openapi/services/myservice/*"]
+    }
+  },
+  "ts-node": {
+    "require": ["tsconfig-paths/register"]
+  }
+}
