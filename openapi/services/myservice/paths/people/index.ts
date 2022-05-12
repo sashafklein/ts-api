@@ -1,16 +1,22 @@
+import _ from "lodash";
 import Person from "@myservice/schemas/Person";
-import { successJson, unauthorized, notFound } from "@helpers/responses";
+import {
+  successResponse,
+  unauthorizedResponse,
+  notFoundResponse,
+  responses,
+} from "@helpers/responses";
 import { pathParam } from "@helpers/params";
 import { makeEndpoint } from "@helpers/endpoint";
 
-const result = {
+export default {
   get: makeEndpoint({
-    summary: "getPerson",
+    name: "getPerson",
     description: "Get data associated with person",
     tag: "persons",
     parameters: [pathParam("personUuid", "uuid", "The person's UUID")],
-    responses: {
-      ...successJson({
+    responses: responses(
+      successResponse({
         status: {
           type: "string",
           example: "success",
@@ -23,14 +29,14 @@ const result = {
           type: "object",
           properties: {
             person: Person().asObject(),
-            limitedPerson: Person().omit(["ssn", "last_name"]).asObject(),
+            limitedPerson: Person().omit("ssn", "last_name").asObject(),
             expandedPerson: Person()
-              .pick(["first_name", "last_name"])
+              .pick("first_name", "last_name")
               .add("age!", { type: "integer" })
               .asObject(),
-            personWithRequiredSsn: Person().require(["ssn"]).asObject(),
+            personWithRequiredSsn: Person().require("ssn").asObject(),
             personWithEasyRequires: Person()
-              .pick(["first_name!", "last_name!"])
+              .pick("first_name!", "last_name!")
               .asObject(),
             bunchaPeople: {
               type: "array",
@@ -39,10 +45,16 @@ const result = {
           },
         },
       }),
-      ...unauthorized(),
-      ...notFound(),
-    },
+      unauthorizedResponse(),
+      notFoundResponse()
+    ),
   }),
 };
 
-export default result;
+// (defaultExample) => ({
+//   other: _.set(
+//     defaultExample,
+//     "value.data.bunchaPeople[0].first_name",
+//     "Booyah"
+//   ),
+// })

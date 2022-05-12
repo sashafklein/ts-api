@@ -82,6 +82,10 @@ export interface ResponseContent {
   };
 }
 
+export interface RequestContent extends ResponseContent {
+  required?: boolean;
+}
+
 export type Responses = Record<number, ResponseContent>;
 
 // Example types

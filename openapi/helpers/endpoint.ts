@@ -1,13 +1,22 @@
 import _ from "lodash";
-import { Example, Param, Property, ResponseContent, Responses } from "./types";
+
+import {
+  Example,
+  Param,
+  Property,
+  ResponseContent,
+  RequestContent,
+  Responses,
+  Examples,
+} from "./types";
 
 interface StartingEndpoint {
-  summary: string;
+  name: string;
   description: string;
   tag: "persons";
   parameters?: Param[];
   responses: Responses;
-  requestBody?: any; // TODO: Type this out. What's missing here?
+  requestBody?: RequestContent;
 }
 
 interface CompleteEndpoint {
@@ -17,10 +26,10 @@ interface CompleteEndpoint {
   tags: string[];
   parameters?: Param[];
   responses: Responses;
-  requestBody?: any;
+  requestBody?: RequestContent;
 }
 
-const simpleExample = (obj) =>
+const simpleExample = (obj: Property) =>
   ({
     string: "Example string",
     integer: 5,
@@ -62,15 +71,17 @@ const hasDefaultExample = (response) =>
   response.content["application/json"].examples?.default;
 
 /**
- * Takes a slightly-simplified endpoint API, completes it, and adds a default example if missing
+ * Takes a slightly-simplified endpoint API, completes it, and adds a default example if missing.
+ * Can also take a function which receives that default example and returns an object defining
+ * any other examples (`{ name: Example, ... }`) to add.
  */
 export const makeEndpoint = (
-  startingEndpoint: StartingEndpoint
+  startingEndpoint: StartingEndpoint,
+  makeAdditionalExamples?: (example: Example) => Examples
 ): CompleteEndpoint => {
   const endpoint: CompleteEndpoint = {
     examples: {},
     ..._.pick(startingEndpoint, [
-      "summary",
       "description",
       "responses",
       "parameters",
@@ -79,28 +90,34 @@ export const makeEndpoint = (
     ]),
   };
 
-  const { tag, summary } = startingEndpoint;
+  const { tag, name } = startingEndpoint;
   const { responses } = endpoint;
 
   // Enforce only one tag
   endpoint.tags = [tag];
 
-  // Produce the operationId automatically
-  endpoint.operationId = _.camelCase(summary);
+  // Renamed summary to name, to encourage simpler function names
+  endpoint.summary = name;
 
+  // Produce the operationId automatically
+  endpoint.operationId = _.camelCase(name);
+
+  // Generate a default example
   if (responses[200] && !hasDefaultExample(responses[200])) {
+    const defaultExample = generate200Example(responses[200]);
+
+    // Use that default example to generate additional examples based on it
+    // If a function to do so is passed.
+    let additionalExamples: Examples = {};
+    if (makeAdditionalExamples) {
+      additionalExamples = makeAdditionalExamples(defaultExample);
+    }
+
+    // Attach all examples to the success response
     responses[200].content["application/json"].examples = {
       ...(responses[200].content["application/json"].examples || {}),
-      default: generate200Example(responses[200]),
-
-      // Just an example of the easy with which we could make pinpoint changes
-      // to generate alternate examples. In the future, this should probably be a callback
-      // of some sort on this function.
-      other: _.set(
-        generate200Example(responses[200]),
-        "value.data.bunchaPeople[0].first_name",
-        "Booyah"
-      ),
+      default: defaultExample,
+      ...additionalExamples,
     };
   }
 

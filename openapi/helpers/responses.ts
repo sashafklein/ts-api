@@ -1,19 +1,24 @@
 import { HttpCode, Properties, Responses, ResponseSchema } from "./types";
 
+export const content = (schema: ResponseSchema, description?: string) => ({
+  description,
+  content: {
+    "application/json": {
+      schema,
+    },
+  },
+});
+
 const response = (
   code: HttpCode,
   schema: ResponseSchema,
   description?: string
 ): Responses => ({
-  [code]: {
-    description,
-    content: {
-      "application/json": {
-        schema,
-      },
-    },
-  },
+  [code]: content(schema, description),
 });
+
+export const responses = (...resps: Responses[]): Responses =>
+  resps.reduce((obj, resp) => ({ ...obj, ...resp }), {});
 
 const errorSchema = (example = "Error in backend"): ResponseSchema => ({
   type: "object",
@@ -26,17 +31,17 @@ const errorSchema = (example = "Error in backend"): ResponseSchema => ({
   required: ["message"],
 });
 
-export const successJson = (properties: Properties) =>
+export const successResponse = (properties: Properties) =>
   response(200, { type: "object", properties });
 
-export const badRequest = () =>
+export const badRequestResponse = () =>
   response(400, errorSchema("Bad request"), "Bad request");
 
-export const unauthorized = () =>
+export const unauthorizedResponse = () =>
   response(401, errorSchema("Unauthorized"), "Unauthorized");
 
-export const forbidden = () =>
+export const forbiddenResponse = () =>
   response(403, errorSchema("Forbidden"), "Forbidden");
 
-export const notFound = () =>
+export const notFoundResponse = () =>
   response(404, errorSchema("Not found"), "Not found");

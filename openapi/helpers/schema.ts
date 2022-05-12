@@ -4,7 +4,7 @@ import { Properties, Property } from "./types";
 /**
  * A class for tracking and modifying properties of any "domain object" (eg Person).
  * Generally created using the Schema helper function (below):
- *   Schema('Person', { ...properties }).pick(['one', 'two']).asObject()
+ *   Schema('Person', { ...properties }).pick('one', 'two').asObject()
  * The `asObject` function is required when integrating into a spec
  * to return openapi-friendly properties.
  */
@@ -24,7 +24,7 @@ export class BaseSchema {
   /**
    * Select the fields to return when calling asObject.
    */
-  pick = (fields: string[]) => {
+  pick = (...fields: string[]) => {
     return this._modify("PICK", fields, (field) => {
       this.selected[field] = this.selected[field];
     });
@@ -33,7 +33,7 @@ export class BaseSchema {
   /**
    * Exclude fields to return when calling asObject.
    */
-  omit = (fields: string[]) => {
+  omit = (...fields: string[]) => {
     return this._modify("OMIT", fields, (field) => {
       delete this.selected[field];
     });
@@ -42,7 +42,7 @@ export class BaseSchema {
   /**
    * Add to the list of required field returned from asObject.
    */
-  require = (fields: string[]) => {
+  require = (...fields: string[]) => {
     return this._modify(
       "REQUIRE",
       fields.map((f) => `${f}!`),
