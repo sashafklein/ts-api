@@ -7,10 +7,35 @@ import {
   responses,
 } from "@helpers/responses";
 import { pathParam } from "@helpers/params";
-import { makeEndpoint } from "@helpers/endpoint";
+import { Controller } from "@helpers/controller";
+import { Property } from "@helpers/types";
+import { validatePathSpec } from "@helpers/path";
 
-export default {
-  get: makeEndpoint({
+const data: Property = {
+  type: "object",
+  properties: {
+    person: Person().toSpec(),
+
+    limitedPerson: Person().omit("ssn", "last_name").toSpec(),
+
+    expandedPerson: Person()
+      .pick("first_name", "last_name")
+      .add("age!", { type: "integer", example: 25 })
+      .toSpec(),
+
+    personWithRequiredSsn: Person().require("ssn").toSpec(),
+
+    personWithEasyRequires: Person().pick("first_name!", "last_name!").toSpec(),
+
+    bunchaPeople: {
+      type: "array",
+      items: Person().toSpec(),
+    },
+  },
+};
+
+export default validatePathSpec({
+  get: new Controller({
     name: "getPerson",
     description: "Get data associated with person",
     tag: "persons",
@@ -25,36 +50,14 @@ export default {
           type: "string",
           example: "Data associated with person.",
         },
-        data: {
-          type: "object",
-          properties: {
-            person: Person().asObject(),
-            limitedPerson: Person().omit("ssn", "last_name").asObject(),
-            expandedPerson: Person()
-              .pick("first_name", "last_name")
-              .add("age!", { type: "integer" })
-              .asObject(),
-            personWithRequiredSsn: Person().require("ssn").asObject(),
-            personWithEasyRequires: Person()
-              .pick("first_name!", "last_name!")
-              .asObject(),
-            bunchaPeople: {
-              type: "array",
-              items: Person().asObject(),
-            },
-          },
-        },
+        data,
       }),
       unauthorizedResponse(),
       notFoundResponse()
     ),
-  }),
-};
-
-// (defaultExample) => ({
-//   other: _.set(
-//     defaultExample,
-//     "value.data.bunchaPeople[0].first_name",
-//     "Booyah"
-//   ),
-// })
+  })
+    .addExample("other", (def) =>
+      _.set(def, "value.data.bunchaPeople[0].first_name", "Booyah")
+    )
+    .toSpec(),
+});

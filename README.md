@@ -31,10 +31,10 @@ export const Example = Schema('ExampleSchema', {
 // ...
 
 // Returns just the requested properties, with the right ones required
-Example().pick('field2', 'field3', 'field4').require('field3').asObject()
+Example().pick('field2', 'field3', 'field4').require('field3').toSpec()
 
 // Results in the same as the above
-Example().omit('someField').require('field3').asObject()
+Example().omit('someField').require('field3').toSpec()
 ```
 
 > Note that type checking would catch an improper field in the above (eg, one without a valid `type`).
