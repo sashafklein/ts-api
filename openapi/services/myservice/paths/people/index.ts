@@ -7,7 +7,7 @@ import {
   responses,
 } from "@helpers/responses";
 import { pathParam } from "@helpers/params";
-import { Controller } from "@helpers/controller";
+import Controller from "@helpers/controller";
 import { Property } from "@helpers/types";
 import { validatePathSpec } from "@helpers/path";
 

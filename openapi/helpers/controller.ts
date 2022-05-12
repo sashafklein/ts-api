@@ -81,54 +81,63 @@ const defaultMapStartingToComplete = (
   return newController;
 };
 
-export class Controller {
-  input: StartingController;
-  examples: Examples;
-  output: CompleteController;
-  defaultExample?: Example;
-  constructor(
-    input: StartingController,
-    mapStartingToComplete = defaultMapStartingToComplete,
-    addDefaultExample = true
-  ) {
-    this.input = input;
-    this.output = mapStartingToComplete(_.cloneDeep(this.input));
-    if (addDefaultExample) {
-      this._addDefaultExample();
+/**
+ * Preemptive planning for open-sourcing.
+ * Makes it easy for a library user to specify any input format,
+ * and a mapping function which produces a functional controller from that input.
+ */
+const makeController = <T extends unknown>(
+  mapStartingToComplete: (controller: T) => CompleteController
+) => {
+  class SpecifiedController {
+    input: T;
+    examples: Examples;
+    output: CompleteController;
+    defaultExample?: Example;
+    constructor(input: T, addDefaultExample = true) {
+      this.input = input;
+      this.output = mapStartingToComplete(_.cloneDeep(this.input));
+      if (addDefaultExample) {
+        this._addDefaultExample();
+      }
     }
+
+    toSpec = () => {
+      return this.output;
+    };
+
+    addExample = (
+      name: string,
+      addExampleFunc: (defaultExample: Example) => Example
+    ) => {
+      const example = addExampleFunc(_.cloneDeep(this.defaultExample));
+      this._200Content().examples[name] = example;
+      return this;
+    };
+
+    _200 = () => {
+      const { responses } = this.output;
+      return responses[200];
+    };
+
+    _200Content = () => {
+      return this._200().content["application/json"];
+    };
+
+    _addDefaultExample = () => {
+      if (!this._200()) return;
+      const content = this._200Content();
+      let examples = content.examples || {};
+      this.defaultExample = examples.default || generate200Example(content);
+
+      content.examples = {
+        ...examples,
+        default: this.defaultExample,
+      };
+    };
   }
 
-  toSpec = () => {
-    return this.output;
-  };
+  return SpecifiedController;
+};
 
-  addExample = (
-    name: string,
-    addExampleFunc: (defaultExample: Example) => Example
-  ) => {
-    const example = addExampleFunc(_.cloneDeep(this.defaultExample));
-    this._200Content().examples[name] = example;
-    return this;
-  };
-
-  _200 = () => {
-    const { responses } = this.output;
-    return responses[200];
-  };
-
-  _200Content = () => {
-    return this._200().content["application/json"];
-  };
-
-  _addDefaultExample = () => {
-    if (!this._200()) return;
-    const content = this._200Content();
-    let examples = content.examples || {};
-    this.defaultExample = examples.default || generate200Example(content);
-
-    content.examples = {
-      ...examples,
-      default: this.defaultExample,
-    };
-  };
-}
+export default makeController(defaultMapStartingToComplete);
