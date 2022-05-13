@@ -4,34 +4,78 @@ import { Properties, Property } from "./types";
 /**
  * A class for tracking and modifying properties of any "domain object" (eg Person).
  * Generally created using the Schema helper function (below):
- *   Schema('Person', { ...properties }).pick('one', 'two').toSpec()
+ *   Schema('Person', { ...properties }).all().pick('one', 'two').toSpec()
  * The `toSpec` function is required when integrating into a spec
  * to return openapi-friendly properties.
  */
-export class BaseSchema {
+export class Schema {
   allProperties: Properties = {};
   selected: Properties = {};
   required: string[];
   name: string;
+  presets: Record<string, string[]> = {};
 
   constructor(name: string, properties: Properties) {
     this.name = name;
-    this.allProperties = properties; // Preserve for easier debugging
-    this.selected = _.cloneDeep(properties);
+    this.allProperties = properties;
+    this.selected = {};
     this.required = [];
   }
 
   /**
-   * Select the fields to return when calling toSpec.
+   * Add to the list of presets associated with this schema.
+   * A preset is just a list of fields that can be easily accessed at once:
+   *   Schema.definePreset('basic', ['first_name', 'last_name']);
+   *   Schema.selectPreset('basic') // Picks first and last name
    */
-  pick = (...fields: string[]) => {
-    return this._modify("PICK", fields, (field) => {
-      this.selected[field] = this.selected[field];
+  definePreset = (name: string, list: string[]) => {
+    list.forEach((field) => {
+      if (!this.allProperties[field]) {
+        throw new Error(
+          `\nFailed defining preset "${name}" for Schema "${this.name}". Field "${field}" does not exist.\n`
+        );
+      }
     });
+
+    this.presets[name] = list;
+    return this;
   };
 
   /**
-   * Exclude fields to return when calling toSpec.
+   * Set selected to be all fields.
+   */
+  all = () => {
+    this.selected = _.cloneDeep(this.allProperties);
+    return this;
+  };
+
+  /**
+   * Set selected to be all fields defined in given preset.
+   */
+  preset = (name: string) => {
+    if (!this.presets[name]) {
+      throw new Error(
+        `\nPreset "${name}" not found for Schema "${this.name}".\n`
+      );
+    }
+
+    return this.all().pick(...this.presets[name]);
+  };
+
+  /**
+   * Select specific fields *among those already selected*.
+   */
+  pick = (...fields: string[]) => {
+    const newSelected = {};
+    this._modify("PICK", fields, (field) => {
+      newSelected[field] = this.selected[field];
+    });
+    this.selected = newSelected;
+    return this;
+  };
+
+  /**
+   * Exclude specific fields *from those already selected*.
    */
   omit = (...fields: string[]) => {
     return this._modify("OMIT", fields, (field) => {
@@ -40,7 +84,7 @@ export class BaseSchema {
   };
 
   /**
-   * Add to the list of required field returned from toSpec.
+   * Declare which of the already selected fields are required.
    */
   require = (...fields: string[]) => {
     return this._modify(
@@ -66,14 +110,26 @@ export class BaseSchema {
 
   /**
    * Return all the properties selected, as an openapi property object.
+   * Simultaneously, resets selected properties to all properties,
+   * so that the next call to the class is unaffected.
    */
   toSpec = () => {
-    return {
+    if (Object.entries(this.selected).length === 0) {
+      throw new Error(
+        `\nAttempted to convert empty ${this.name} to spec. Did you forget to call \`${this.name}.all()\`?\n`
+      );
+    }
+    const spec = {
       type: "object" as "object",
       properties: this.selected,
       required: this.required,
       title: this.name,
     };
+
+    this.selected = {};
+    this.required = [];
+
+    return spec;
   };
 
   /**
@@ -95,9 +151,9 @@ export class BaseSchema {
       const { name, required } = this._parse(field);
       if (!this.selected[name]) {
         throw new Error(
-          `${action}: Failed to find property "${name}" on "${this.name}".
-          All Properties: ${JSON.stringify(this.allProperties, null, 2)}
-          Selected Properties: ${JSON.stringify(this.selected, null, 2)}`
+          `\n${action}: Failed to find property "${name}" on "${this.name}".\n
+          All Props:\n\n${JSON.stringify(this.allProperties, null, 2)}\n
+          Selected Props:\n\n${JSON.stringify(this.selected, null, 2)}\n`
         );
       }
 
@@ -111,12 +167,3 @@ export class BaseSchema {
     return this;
   };
 }
-
-/**
- *
- * @param name Schema Name (eg Person)
- * @param properties List of properties to fill the schema with
- * @returns A new Schema class instance.
- */
-export const Schema = (name: string, properties: Properties) => () =>
-  new BaseSchema(name, properties);

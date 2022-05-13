@@ -14,22 +14,26 @@ import { validatePathSpec } from "@helpers/path";
 const data: Property = {
   type: "object",
   properties: {
-    person: Person().toSpec(),
+    person: Person.all().toSpec(),
 
-    limitedPerson: Person().omit("ssn", "last_name").toSpec(),
+    limitedPerson: Person.all().omit("ssn", "middle_name").toSpec(),
 
-    expandedPerson: Person()
+    presetPerson: Person.preset("names").toSpec(),
+
+    expandedPerson: Person.all()
       .pick("first_name", "last_name")
       .add("age!", { type: "integer", example: 25 })
       .toSpec(),
 
-    personWithRequiredSsn: Person().require("ssn").toSpec(),
+    personWithRequiredSsn: Person.all().require("ssn").toSpec(),
 
-    personWithEasyRequires: Person().pick("first_name!", "last_name!").toSpec(),
+    personWithEasyRequires: Person.all()
+      .pick("first_name!", "last_name!")
+      .toSpec(),
 
     bunchaPeople: {
       type: "array",
-      items: Person().toSpec(),
+      items: Person.all().toSpec(),
     },
   },
 };

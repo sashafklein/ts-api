@@ -1,5 +1,5 @@
-import PersonSchema from "./Person";
+import Person from "./Person";
 
 export default {
-  Person: PersonSchema().toSpec(),
+  Person: Person.all().toSpec(),
 };
