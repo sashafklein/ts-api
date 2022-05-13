@@ -1,4 +1,5 @@
 import _ from "lodash";
+import JSON from "node-json-color-stringify";
 
 import { Properties, Property } from "./types";
 /**
@@ -116,7 +117,7 @@ export class Schema {
   toSpec = () => {
     if (Object.entries(this.selected).length === 0) {
       throw new Error(
-        `\nAttempted to convert empty ${this.name} to spec. Did you forget to call \`${this.name}.all()\`?\n`
+        `\nAttempted to call \`toSpec\` on empty ${this.name}. Did you forget to call \`${this.name}.all()\`?\n`
       );
     }
     const spec = {
@@ -147,13 +148,24 @@ export class Schema {
    * Helper function for "selecting" properties and marking some as required.
    */
   _modify = (action, fields: string[], operation: (field?: string) => void) => {
+    // No modifications can occur on empty schemas.
+    // If the schema is empty, raise a useful error.
+    if (Object.entries(this.selected).length === 0) {
+      const fieldString = fields.map((f) => `'${f}'`).join(", ");
+      throw new Error(
+        `\nAttempted to call ${action.toLowerCase()}(${
+          fieldString.length > 50 ? "..." : fieldString
+        }) on empty ${this.name}. Did you forget to first call \`all()\`?\n`
+      );
+    }
+
     fields.forEach((field) => {
       const { name, required } = this._parse(field);
       if (!this.selected[name]) {
         throw new Error(
-          `\n${action}: Failed to find property "${name}" on "${this.name}".\n
-          All Props:\n\n${JSON.stringify(this.allProperties, null, 2)}\n
-          Selected Props:\n\n${JSON.stringify(this.selected, null, 2)}\n`
+          `\n${action}: Failed to find property "${name}" on "${this.name}".
+          \nAll Props:\n\n${JSON.colorStringify(this.allProperties, null, 2)}
+          \nSelected Props:\n\n${JSON.colorStringify(this.selected, null, 2)}\n`
         );
       }
 
