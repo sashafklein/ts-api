@@ -17,27 +17,26 @@ export const stringProp = (
 });
 
 export const patternProp = (
-  pattern: string,
+  pattern: RegExp,
   example: string,
   other = {} as StringProperty
 ): StringProperty => {
-  const regex = new RegExp(pattern);
-  if (!example.match(regex)) {
+  if (!example.match(pattern)) {
     throw new Error(
       `Pattern/Example mismatch. Pattern: "${pattern}". Example: "${example}".`
     );
   }
 
-  return stringProp(example, { ...other, pattern });
+  return stringProp(example, { ...other, pattern: pattern.toString() });
 };
 
 export const dateProp = (
   example: string = "1970-06-24",
   other = {} as StringProperty
 ): StringProperty => {
-  const regex = /\d{4}-\d{2}-\d{2}/g;
+  const regex = /\d{4}-\d{2}-\d{2}/;
   if (!example.match(regex)) {
-    throw new Error(`Bad date example: ${example}`);
+    throw new Error(`Bad date example: "${example}"`);
   }
 
   return stringProp(example, { ...other, format: "date" });
@@ -47,9 +46,9 @@ export const datetimeProp = (
   example: string = "1970-06-24T05:34:58Z+01:00",
   other = {} as StringProperty
 ): StringProperty => {
-  const regex = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}\d{2}Z\+\d{2}:\d{2}/g;
+  const regex = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}\d{2}Z\+\d{2}:\d{2}/;
   if (!example.match(regex)) {
-    throw new Error(`Bad datetime example: ${example}`);
+    throw new Error(`Bad datetime example: "${example}"`);
   }
 
   return {
