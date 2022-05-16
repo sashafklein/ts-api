@@ -1,3 +1,4 @@
+import Responses from "@helpers/responses";
 import PeoplePath from "@myservice/paths/people";
 import Schemas from "@myservice/schemas";
 
@@ -13,11 +14,11 @@ export default {
   components: {
     schemas: Schemas,
     responses: {
-      $ref: "components/responses/index.js",
+      $ref: Responses,
     },
-    parameters: {
-      $ref: "components/parameters/index.js",
-    },
+    // parameters: {
+    //   $ref: "components/parameters/index.js",
+    // },
   },
   servers: [
     {

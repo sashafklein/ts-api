@@ -1,14 +1,11 @@
+import { stringProp } from "@helpers/props";
 import { Schema } from "@helpers/schema";
-import fields from "../fields";
-const { first_name, last_name, ssn } = fields;
+import { ssn } from "../fields";
 
 const Person = new Schema("Person", {
-  first_name,
-  middle_name: {
-    type: "string",
-    example: "M",
-  },
-  last_name,
+  first_name: stringProp("Pam"),
+  middle_name: stringProp("M"),
+  last_name: stringProp("Halpert"),
   ssn,
 });
 

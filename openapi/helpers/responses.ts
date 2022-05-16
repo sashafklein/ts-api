@@ -45,3 +45,11 @@ export const forbiddenResponse = () =>
 
 export const notFoundResponse = () =>
   response(404, errorSchema("Not found"), "Not found");
+
+export default {
+  Success: successResponse({}),
+  BadRequest: badRequestResponse(),
+  Unauthorized: unauthorizedResponse(),
+  Forbidden: forbiddenResponse(),
+  NotFound: notFoundResponse(),
+};

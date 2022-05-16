@@ -1,47 +1,51 @@
-interface BooleanProperty {
-  type: "boolean";
-  example?: number | boolean | string;
+interface BaseProperty<T> {
+  type: string;
+  enum?: Array<T>;
+  example?: T;
   description?: string;
 }
 
-interface NumberProperty {
-  type: "number" | "integer";
+export interface BooleanProperty extends BaseProperty<boolean> {
+  type: "boolean";
+}
+
+export interface NumberProperty extends BaseProperty<number> {
+  type: "number";
   minimum?: number;
   maximum?: number;
-  format?: string;
-  enum?: number[];
-  example?: number;
-  description?: string;
+  format?: "float";
 }
 
-interface StringProperty {
+export interface IntegerProperty extends BaseProperty<number> {
+  type: "integer";
+  minimum?: number;
+  maximum?: number;
+}
+
+type StringFormats = "date" | "date-time" | "byte" | "binary";
+export interface StringProperty extends BaseProperty<string> {
   type: "string";
-  example?: string;
-  format?: string;
-  pattern?: RegExp;
-  enum?: string[];
-  description?: string;
+  format?: StringFormats;
+  /** A string of a regex pattern **/
+  pattern?: string;
 }
 
-interface ObjectProperty {
+export interface ObjectProperty extends BaseProperty<Record<string, Property>> {
   type: "object";
   properties: Record<string, Property>;
   required?: string[];
-  example?: object;
-  description?: string;
   title?: string; // If a schema
 }
 
-interface ArrayProperty {
+export interface ArrayProperty extends BaseProperty<Array<any>> {
   type: "array";
   items: Property;
-  example?: any[];
-  description?: string;
 }
 
 export type Property =
   | BooleanProperty
   | NumberProperty
+  | IntegerProperty
   | StringProperty
   | ObjectProperty
   | ArrayProperty;

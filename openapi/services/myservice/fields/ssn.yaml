@@ -1,3 +1,0 @@
-type: string
-pattern: '^\d{9}$'
-example: "123456789"

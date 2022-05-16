@@ -9,17 +9,17 @@ import { Properties, Property } from "./types";
  * The `toSpec` function is required when integrating into a spec
  * to return openapi-friendly properties.
  */
-export class Schema {
-  allProperties: Properties = {};
-  selected: Properties = {};
-  required: string[];
+export class Schema<PropType extends Properties> {
+  allProperties: Record<keyof PropType, Property> = {} as PropType;
+  selected: Record<keyof PropType, Property> = {} as PropType;
+  required: Array<keyof PropType>;
   name: string;
-  presets: Record<string, string[]> = {};
+  presets: Record<string, Array<keyof PropType>> = {};
 
-  constructor(name: string, properties: Properties) {
+  constructor(name: string, properties: PropType) {
     this.name = name;
     this.allProperties = properties;
-    this.selected = {};
+    this.selected = {} as PropType;
     this.required = [];
   }
 
@@ -29,7 +29,7 @@ export class Schema {
    *   Schema.definePreset('basic', ['first_name', 'last_name']);
    *   Schema.selectPreset('basic') // Picks first and last name
    */
-  definePreset = (name: string, list: string[]) => {
+  definePreset = (name: string, list: Array<keyof PropType>) => {
     list.forEach((field) => {
       if (!this.allProperties[field]) {
         throw new Error(
@@ -66,19 +66,23 @@ export class Schema {
   /**
    * Select specific fields *among those already selected*.
    */
-  pick = (...fields: string[]) => {
+  pick = (
+    ...fields: Array<keyof PropType | `${Extract<keyof PropType, string>}!`>
+  ) => {
     const newSelected = {};
     this._modify("PICK", fields, (field) => {
       newSelected[field] = this.selected[field];
     });
-    this.selected = newSelected;
+    this.selected = newSelected as PropType;
     return this;
   };
 
   /**
    * Exclude specific fields *from those already selected*.
    */
-  omit = (...fields: string[]) => {
+  omit = (
+    ...fields: Array<keyof PropType | `${Extract<keyof PropType, string>}!`>
+  ) => {
     return this._modify("OMIT", fields, (field) => {
       delete this.selected[field];
     });
@@ -87,7 +91,9 @@ export class Schema {
   /**
    * Declare which of the already selected fields are required.
    */
-  require = (...fields: string[]) => {
+  require = (
+    ...fields: Array<keyof PropType | `${Extract<keyof PropType, string>}!`>
+  ) => {
     return this._modify(
       "REQUIRE",
       fields.map((f) => `${f}!`),
@@ -99,7 +105,10 @@ export class Schema {
    * Add a single field. Note that this field must be an openapi property, with a type, etc.
    */
   add = (field, fieldValue: Property) => {
-    const { name, required } = this._parse(field);
+    const { name, required } = this._parse(field) as {
+      name: keyof PropType;
+      required: boolean;
+    };
     this.selected[name] = fieldValue;
 
     if (required) {
@@ -127,7 +136,7 @@ export class Schema {
       title: this.name,
     };
 
-    this.selected = {};
+    this.selected = {} as PropType;
     this.required = [];
 
     return spec;
@@ -147,7 +156,11 @@ export class Schema {
   /**
    * Helper function for "selecting" properties and marking some as required.
    */
-  _modify = (action, fields: string[], operation: (field?: string) => void) => {
+  _modify = (
+    action,
+    fields: Array<keyof PropType | `${Extract<keyof PropType, string>}!`>,
+    operation: (field?: string) => void
+  ) => {
     // No modifications can occur on empty schemas.
     // If the schema is empty, raise a useful error.
     if (Object.entries(this.selected).length === 0) {
