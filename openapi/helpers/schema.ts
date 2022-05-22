@@ -30,18 +30,19 @@ export class Schema<PropType extends Properties> {
    *   Schema.selectPreset('basic') // Picks first and last name
    */
   definePreset = (
-    name: string,
+    presetName: string,
     list: Array<keyof PropType | `${Extract<keyof PropType, string>}!`>
   ) => {
     list.forEach((field) => {
-      if (!this.allProperties[field]) {
+      const { name } = this._parse(field);
+      if (!this.allProperties[name]) {
         throw new Error(
-          `\nFailed defining preset "${name}" for Schema "${this.name}". Field "${field}" does not exist.\n`
+          `\nFailed defining preset "${name}" for Schema "${this.name}". Field "${name}" does not exist.\n`
         );
       }
     });
 
-    this.presets[name] = list;
+    this.presets[presetName] = list;
     return this;
   };
 
@@ -83,9 +84,7 @@ export class Schema<PropType extends Properties> {
   /**
    * Exclude specific fields *from those already selected*.
    */
-  omit = (
-    ...fields: Array<keyof PropType | `${Extract<keyof PropType, string>}!`>
-  ) => {
+  omit = (...fields: Array<keyof PropType>) => {
     return this._modify("OMIT", fields, (field) => {
       delete this.selected[field];
     });
@@ -94,12 +93,21 @@ export class Schema<PropType extends Properties> {
   /**
    * Declare which of the already selected fields are required.
    */
-  require = (
-    ...fields: Array<keyof PropType | `${Extract<keyof PropType, string>}!`>
-  ) => {
+  require = (...fields: Array<keyof PropType>) => {
     return this._modify(
       "REQUIRE",
       fields.map((f) => `${f}!`),
+      () => {}
+    );
+  };
+
+  /**
+   * Remove require declaration from the specified (already selected) fields.
+   */
+  unrequire = (...fields: Array<keyof PropType>) => {
+    return this._modify(
+      "UNREQUIRE",
+      fields.map((f: string) => f.replace("!", "")),
       () => {}
     );
   };
@@ -170,7 +178,7 @@ export class Schema<PropType extends Properties> {
       const fieldString = fields.map((f) => `'${f}'`).join(", ");
       throw new Error(
         `\nAttempted to call ${action.toLowerCase()}(${
-          fieldString.length > 50 ? "..." : fieldString
+          fieldString.length > 45 ? `${fieldString}...` : fieldString
         }) on empty ${this.name}. Did you forget to first call \`all()\`?\n`
       );
     }

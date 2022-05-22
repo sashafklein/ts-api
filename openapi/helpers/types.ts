@@ -1,5 +1,7 @@
+type Type = "string" | "number" | "integer" | "object" | "boolean" | "array";
+
 interface BaseProperty<T> {
-  type: string;
+  type: Type;
   enum?: Array<T>;
   example?: T;
   description?: string;

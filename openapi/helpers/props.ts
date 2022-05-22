@@ -9,9 +9,9 @@ import {
 
 export const stringProp = (
   example: string = "Example string",
-  other = {} as StringProperty
+  other: Partial<StringProperty> = {}
 ): StringProperty => ({
-  ...(other || {}),
+  ...other,
   type: "string",
   example,
 });
@@ -19,7 +19,7 @@ export const stringProp = (
 export const patternProp = (
   pattern: RegExp,
   example: string,
-  other = {} as StringProperty
+  other: Partial<StringProperty> = {}
 ): StringProperty => {
   if (!example.match(pattern)) {
     throw new Error(
@@ -32,7 +32,7 @@ export const patternProp = (
 
 export const dateProp = (
   example: string = "1970-06-24",
-  other = {} as StringProperty
+  other: Partial<StringProperty> = {}
 ): StringProperty => {
   const regex = /\d{4}-\d{2}-\d{2}/;
   if (!example.match(regex)) {
@@ -44,7 +44,7 @@ export const dateProp = (
 
 export const datetimeProp = (
   example: string = "1970-06-24T05:34:58Z+01:00",
-  other = {} as StringProperty
+  other: Partial<StringProperty> = {}
 ): StringProperty => {
   const regex = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}\d{2}Z\+\d{2}:\d{2}/;
   if (!example.match(regex)) {
@@ -61,7 +61,7 @@ export const datetimeProp = (
 
 export const intProp = (
   example: number = 5,
-  other = {} as IntegerProperty
+  other: Partial<IntegerProperty> = {}
 ): IntegerProperty => ({
   ...other,
   type: "integer",
@@ -70,7 +70,7 @@ export const intProp = (
 
 export const floatProp = (
   example: number = 0.5,
-  other = {} as NumberProperty
+  other: Partial<NumberProperty> = {}
 ): NumberProperty => ({
   ...other,
   type: "number",
@@ -80,7 +80,7 @@ export const floatProp = (
 
 export const arrayProp = (
   item: Property,
-  other = {} as ArrayProperty
+  other: Partial<ArrayProperty> = {}
 ): ArrayProperty => ({
   ...other,
   type: "array",
@@ -89,7 +89,7 @@ export const arrayProp = (
 
 export const objectProp = (
   properties: Record<string, Property>,
-  other = {} as ObjectProperty
+  other: Partial<ObjectProperty> = {}
 ): ObjectProperty => ({
   ...other,
   type: "object",
