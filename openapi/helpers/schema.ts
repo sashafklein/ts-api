@@ -29,7 +29,10 @@ export class Schema<PropType extends Properties> {
    *   Schema.definePreset('basic', ['first_name', 'last_name']);
    *   Schema.selectPreset('basic') // Picks first and last name
    */
-  definePreset = (name: string, list: Array<keyof PropType>) => {
+  definePreset = (
+    name: string,
+    list: Array<keyof PropType | `${Extract<keyof PropType, string>}!`>
+  ) => {
     list.forEach((field) => {
       if (!this.allProperties[field]) {
         throw new Error(
